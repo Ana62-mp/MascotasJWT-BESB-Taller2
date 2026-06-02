@@ -2,6 +2,7 @@ package com.krakedev.jwt.services;
 
 import java.util.Optional;
 
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,10 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     public Usuario registrar(Usuario usuario) {
+        String passwordEncriptada = BCrypt.hashpw(usuario.getPassword(), BCrypt.gensalt());
+
+        usuario.setPassword(passwordEncriptada);
+
         return usuarioRepository.save(usuario);
     }
 
@@ -24,7 +29,9 @@ public class UsuarioService {
         if (usuarioOptional.isPresent()) {
             Usuario usuarioEncontrado = usuarioOptional.get();
 
-            if (usuarioEncontrado.getPassword().equals(password)) {
+            boolean passwordCorrecta = BCrypt.checkpw(password, usuarioEncontrado.getPassword());
+
+            if (passwordCorrecta) {
                 return usuarioEncontrado;
             }
         }
